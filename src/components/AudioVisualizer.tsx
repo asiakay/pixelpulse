@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 const AudioVisualizer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -9,7 +9,7 @@ const AudioVisualizer: React.FC = () => {
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationFrameIdRef = useRef<number>(0);
   const isInitialized = useRef(false);
-  const setupAudioContext = () => {
+  const setupAudioContext = useCallback(() => {
     if (isInitialized.current || !audioRef) return;
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -24,7 +24,7 @@ const AudioVisualizer: React.FC = () => {
       analyserRef.current.connect(audioContextRef.current.destination);
     }
     isInitialized.current = true;
-  };
+  }, [audioRef]);
   useEffect(() => {
     const draw = () => {
       const canvas = canvasRef.current;
@@ -78,7 +78,7 @@ const AudioVisualizer: React.FC = () => {
     return () => {
       stopVisualization();
     };
-  }, [audioRef, isPlaying]);
+  }, [audioRef, isPlaying, setupAudioContext]);
   return <canvas ref={canvasRef} width="600" height="150" className="w-full h-full" />;
 };
 export default AudioVisualizer;

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -68,7 +69,13 @@ export function HomePage() {
         <CardContent className="p-6 space-y-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-4">
+              <motion.div
+                key={currentTrack.title}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.75 }}
+                className="flex items-center gap-4"
+              >
                 <img
                   src={currentTrack.imageSrc}
                   alt="Album Art"
@@ -79,7 +86,7 @@ export function HomePage() {
                   <h2 className="text-3xl text-neon-yellow">{currentTrack.title}</h2>
                   <p className="text-lg text-neon-cyan/80">{currentTrack.artist}</p>
                 </div>
-              </div>
+              </motion.div>
               <div className="h-36 bg-black/50 border border-neon-cyan/50 rounded-sm p-2">
                 <AudioVisualizer />
               </div>
