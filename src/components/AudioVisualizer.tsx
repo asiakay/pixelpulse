@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 const AudioVisualizer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -8,28 +8,26 @@ const AudioVisualizer: React.FC = () => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationFrameIdRef = useRef<number>(0);
-  const isInitialized = useRef(false);
-  const setupAudioContext = useCallback(() => {
-    if (isInitialized.current || !audioRef) return;
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (!analyserRef.current) {
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      analyserRef.current.fftSize = 256;
-    }
-    if (!sourceRef.current) {
-      sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef);
-      sourceRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(audioContextRef.current.destination);
-    }
-    isInitialized.current = true;
-  }, [audioRef]);
   useEffect(() => {
+    if (!audioRef) return;
+    const setupAudioContext = () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      if (!analyserRef.current) {
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+      }
+      if (!sourceRef.current) {
+        sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef);
+        sourceRef.current.connect(analyserRef.current);
+        analyserRef.current.connect(audioContextRef.current.destination);
+      }
+    };
     const draw = () => {
       const canvas = canvasRef.current;
       const analyser = analyserRef.current;
-      if (!canvas || !analyser || !isInitialized.current) return;
+      if (!canvas || !analyser) return;
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
@@ -44,8 +42,7 @@ const AudioVisualizer: React.FC = () => {
         const hue = (i / bufferLength) * 360;
         const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
         gradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`);
-        gradient.addColorStop(0.5, `hsl(${(hue + 60) % 360}, 100%, 50%)`);
-        gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, 100%, 50%)`);
+        gradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 100%, 50%)`);
         ctx.fillStyle = gradient;
         ctx.fillRect(x, height - barHeight, barWidth, barHeight);
         x += barWidth + 2;
@@ -53,9 +50,6 @@ const AudioVisualizer: React.FC = () => {
       animationFrameIdRef.current = requestAnimationFrame(draw);
     };
     const startVisualization = () => {
-      if (!isInitialized.current) {
-        setupAudioContext();
-      }
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
@@ -70,7 +64,8 @@ const AudioVisualizer: React.FC = () => {
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
       }
     };
-    if (isPlaying && audioRef) {
+    if (isPlaying) {
+      setupAudioContext();
       startVisualization();
     } else {
       stopVisualization();
@@ -78,7 +73,7 @@ const AudioVisualizer: React.FC = () => {
     return () => {
       stopVisualization();
     };
-  }, [audioRef, isPlaying, setupAudioContext]);
+  }, [audioRef, isPlaying]);
   return <canvas ref={canvasRef} width="600" height="150" className="w-full h-full" />;
 };
 export default AudioVisualizer;

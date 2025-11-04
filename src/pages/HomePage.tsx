@@ -1,148 +1,157 @@
-// Home page of the app, Currently a demo page for demonstration.
-// Please rewrite this file to implement your own logic. Do not replace or delete it, simply rewrite this HomePage.tsx file.
-import { useEffect } from 'react'
-import { Sparkles } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { Toaster, toast } from '@/components/ui/sonner'
-import { create } from 'zustand'
-import { useShallow } from 'zustand/react/shallow'
-import { AppLayout } from '@/components/layout/AppLayout'
-
-// Timer store: independent slice with a clear, minimal API, for demonstration
-type TimerState = {
-  isRunning: boolean;
-  elapsedMs: number;
-  start: () => void;
-  pause: () => void;
-  reset: () => void;
-  tick: (deltaMs: number) => void;
-}
-
-const useTimerStore = create<TimerState>((set) => ({
-  isRunning: false,
-  elapsedMs: 0,
-  start: () => set({ isRunning: true }),
-  pause: () => set({ isRunning: false }),
-  reset: () => set({ elapsedMs: 0, isRunning: false }),
-  tick: (deltaMs) => set((s) => ({ elapsedMs: s.elapsedMs + deltaMs })),
-}))
-
-// Counter store: separate slice to showcase multiple stores without coupling
-type CounterState = {
-  count: number;
-  inc: () => void;
-  reset: () => void;
-}
-
-const useCounterStore = create<CounterState>((set) => ({
-  count: 0,
-  inc: () => set((s) => ({ count: s.count + 1 })),
-  reset: () => set({ count: 0 }),
-}))
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import React, { useEffect, useRef } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { usePlayerStore } from '@/stores/usePlayerStore';
+import AudioVisualizer from '@/components/AudioVisualizer';
+import { cn } from '@/lib/utils';
+const formatTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+};
+const VolumeIcon = ({ volume }: { volume: number }) => {
+  if (volume === 0) return <VolumeX className="h-5 w-5" />;
+  if (volume < 0.5) return <Volume1 className="h-5 w-5" />;
+  return <Volume2 className="h-5 w-5" />;
+};
 export function HomePage() {
-  // Select only what is needed to avoid unnecessary re-renders
-  const { isRunning, elapsedMs } = useTimerStore(
-    useShallow((s) => ({ isRunning: s.isRunning, elapsedMs: s.elapsedMs })),
-  )
-  const start = useTimerStore((s) => s.start)
-  const pause = useTimerStore((s) => s.pause)
-  const resetTimer = useTimerStore((s) => s.reset)
-  const count = useCounterStore((s) => s.count)
-  const inc = useCounterStore((s) => s.inc)
-  const resetCount = useCounterStore((s) => s.reset)
-
-  // Drive the timer only while running; avoid update-depth issues with a scoped RAF
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const playlist = usePlayerStore(s => s.playlist);
+  const currentTrackIndex = usePlayerStore(s => s.currentTrackIndex);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const volume = usePlayerStore(s => s.volume);
+  const currentTime = usePlayerStore(s => s.currentTime);
+  const duration = usePlayerStore(s => s.duration);
+  const setAudioRef = usePlayerStore(s => s.setAudioRef);
+  const togglePlay = usePlayerStore(s => s.togglePlay);
+  const nextTrack = usePlayerStore(s => s.nextTrack);
+  const prevTrack = usePlayerStore(s => s.prevTrack);
+  const setVolume = usePlayerStore(s => s.setVolume);
+  const seek = usePlayerStore(s => s.seek);
+  const setCurrentTime = usePlayerStore(s => s.setCurrentTime);
+  const setDuration = usePlayerStore(s => s.setDuration);
+  const playTrack = usePlayerStore(s => s.playTrack);
+  const currentTrack = playlist[currentTrackIndex];
   useEffect(() => {
-    if (!isRunning) return
-    let raf = 0
-    let last = performance.now()
-    const loop = () => {
-      const now = performance.now()
-      const delta = now - last
-      last = now
-      // Read store API directly to keep effect deps minimal and stable
-      useTimerStore.getState().tick(delta)
-      raf = requestAnimationFrame(loop)
+    if (audioRef.current) {
+      setAudioRef(audioRef.current);
     }
-    raf = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(raf)
-  }, [isRunning])
-
-  const onPleaseWait = () => {
-    inc()
-    if (!isRunning) {
-      start()
-      toast.success('Building your app…', {
-        description: 'Hang tight, we\'re setting everything up.',
-      })
-    } else {
-      pause()
-      toast.info('Taking a short pause', {
-        description: 'We\'ll continue shortly.',
-      })
-    }
-  }
-
-  const formatted = formatDuration(elapsedMs)
-
+  }, [setAudioRef]);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleLoadedMetadata = () => setDuration(audio.duration);
+    const handleEnded = () => nextTrack();
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [nextTrack, setCurrentTime, setDuration]);
   return (
-    <AppLayout>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-        <ThemeToggle />
-        <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-        <div className="text-center space-y-8 relative z-10 animate-fade-in">
-          <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-              <Sparkles className="w-8 h-8 text-white rotating" />
+    <div className="min-h-screen bg-black text-neon-cyan font-pixel flex items-center justify-center p-4">
+      <audio ref={audioRef} src={currentTrack.audioSrc} crossOrigin="anonymous" />
+      <Card className="w-full max-w-4xl bg-black/50 border-2 border-neon-magenta shadow-[0_0_20px_theme(colors.neon-magenta)] rounded-sm backdrop-blur-sm">
+        <CardHeader className="text-center border-b-2 border-neon-magenta/50 pb-4">
+          <CardTitle className="text-4xl font-pixel text-neon-yellow animate-neon-glow tracking-widest">
+            PixelPulse
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={currentTrack.imageSrc}
+                  alt="Album Art"
+                  className="w-24 h-24 rounded-sm border-2 border-neon-cyan shadow-[0_0_15px_theme(colors.neon-cyan)] object-cover"
+                  style={{ imageRendering: 'pixelated' }}
+                />
+                <div>
+                  <h2 className="text-3xl text-neon-yellow">{currentTrack.title}</h2>
+                  <p className="text-lg text-neon-cyan/80">{currentTrack.artist}</p>
+                </div>
+              </div>
+              <div className="h-36 bg-black/50 border border-neon-cyan/50 rounded-sm p-2">
+                <AudioVisualizer />
+              </div>
+              <div className="space-y-2">
+                <Slider
+                  value={[currentTime]}
+                  max={duration || 1}
+                  step={1}
+                  onValueChange={(value) => seek(value[0])}
+                  className="[&>span:first-child]:h-1 [&>span:first-child>span]:bg-neon-magenta [&>span:last-child]:bg-neon-cyan [&>span:last-child]:border-neon-yellow [&>span:last-child]:shadow-[0_0_10px_theme(colors.neon-yellow)]"
+                />
+                <div className="flex justify-between text-sm text-neon-cyan/80">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 w-32">
+                  <Button variant="ghost" size="icon" className="text-neon-cyan hover:text-neon-yellow hover:bg-transparent">
+                    <VolumeIcon volume={volume} />
+                  </Button>
+                  <Slider
+                    value={[volume]}
+                    max={1}
+                    step={0.01}
+                    onValueChange={(value) => setVolume(value[0])}
+                    className="w-24 [&>span:first-child]:h-1 [&>span:first-child>span]:bg-neon-cyan [&>span:last-child]:bg-neon-yellow [&>span:last-child]:border-neon-cyan [&>span:last-child]:shadow-[0_0_10px_theme(colors.neon-cyan)]"
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Button onClick={prevTrack} variant="ghost" size="icon" className="text-neon-cyan hover:text-neon-yellow hover:bg-transparent transition-colors active:scale-90">
+                    <SkipBack className="h-8 w-8" />
+                  </Button>
+                  <Button
+                    onClick={togglePlay}
+                    variant="outline"
+                    size="icon"
+                    className="h-16 w-16 rounded-full border-2 border-neon-magenta text-neon-magenta bg-transparent hover:bg-neon-magenta/20 hover:text-neon-yellow shadow-[0_0_15px_theme(colors.neon-magenta)] transition-all active:scale-90"
+                  >
+                    {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+                  </Button>
+                  <Button onClick={nextTrack} variant="ghost" size="icon" className="text-neon-cyan hover:text-neon-yellow hover:bg-transparent transition-colors active:scale-90">
+                    <SkipForward className="h-8 w-8" />
+                  </Button>
+                </div>
+                <div className="w-32" />
+              </div>
+            </div>
+            <div className="w-full md:w-64">
+              <h3 className="text-lg text-neon-yellow border-b-2 border-neon-magenta/50 mb-2 pb-1">Playlist</h3>
+              <ScrollArea className="h-80 border border-neon-cyan/50 rounded-sm p-2 bg-black/50">
+                <div className="space-y-1">
+                  {playlist.map((track, index) => (
+                    <button
+                      key={index}
+                      onClick={() => playTrack(index)}
+                      className={cn(
+                        "w-full text-left p-2 rounded-sm transition-colors text-sm",
+                        index === currentTrackIndex
+                          ? "bg-neon-magenta/30 text-neon-yellow animate-text-glitch"
+                          : "text-neon-cyan/80 hover:bg-neon-cyan/20"
+                      )}
+                    >
+                      <p className="font-bold truncate">{track.title}</p>
+                      <p className="text-xs truncate">{track.artist}</p>
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
           </div>
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button 
-              size="lg"
-              onClick={onPleaseWait}
-              className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-              aria-live="polite"
-            >
-              Please Wait
-            </Button>
-          </div>
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div>
-              Time elapsed: <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-            </div>
-            <div>
-              Coins: <span className="font-medium tabular-nums text-foreground">{count}</span>
-            </div>
-          </div>
-          <div className="flex justify-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { resetTimer(); resetCount(); toast('Reset complete') }}>
-              Reset
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => { inc(); toast('Coin added') }}>
-              Add Coin
-            </Button>
-          </div>
-        </div>
-        <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-          <p>Powered by Cloudflare</p>
-        </footer>
-        <Toaster richColors closeButton />
-      </div>
-    </AppLayout>
-  )
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
