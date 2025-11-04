@@ -58,11 +58,11 @@ export function HomePage() {
     };
   }, [currentTrackIndex, nextTrack, setCurrentTime, setDuration]);
   return (
-    <div className="min-h-screen bg-black text-neon-cyan font-pixel flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans flex items-center justify-center p-4">
       <audio ref={audioRef} src={currentTrack.audioSrc} crossOrigin="anonymous" />
-      <Card className="w-full max-w-4xl bg-black/50 border-2 border-neon-magenta shadow-[0_0_20px_theme(colors.neon-magenta)] rounded-sm backdrop-blur-sm">
-        <CardHeader className="text-center border-b-2 border-neon-magenta/50 pb-4">
-          <CardTitle className="text-4xl font-pixel text-neon-yellow animate-neon-glow tracking-widest">
+      <Card className="w-full max-w-4xl bg-white dark:bg-brand-earth border border-gray-200 dark:border-brand-orange/50 shadow-2xl rounded-lg overflow-hidden">
+        <CardHeader className="text-center border-b border-gray-200 dark:border-brand-orange/30 p-4 bg-gray-50 dark:bg-brand-earth/50">
+          <CardTitle className="text-4xl font-display text-brand-orange tracking-wider">
             PixelPulse
           </CardTitle>
         </CardHeader>
@@ -79,15 +79,14 @@ export function HomePage() {
                 <img
                   src={currentTrack.imageSrc}
                   alt="Album Art"
-                  className="w-24 h-24 rounded-sm border-2 border-neon-cyan shadow-[0_0_15px_theme(colors.neon-cyan)] object-cover"
-                  style={{ imageRendering: 'pixelated' }}
+                  className="w-24 h-24 rounded-md shadow-lg object-cover"
                 />
                 <div>
-                  <h2 className="text-3xl text-neon-yellow">{currentTrack.title}</h2>
-                  <p className="text-lg text-neon-cyan/80">{currentTrack.artist}</p>
+                  <h2 className="text-3xl font-bold text-brand-orange">{currentTrack.title}</h2>
+                  <p className="text-lg text-gray-600 dark:text-gray-300">{currentTrack.artist}</p>
                 </div>
               </motion.div>
-              <div className="h-36 bg-black/50 border border-neon-cyan/50 rounded-sm p-2">
+              <div className="h-36 bg-gray-100 dark:bg-black/50 border border-gray-200 dark:border-brand-blue/30 rounded-lg p-2">
                 <AudioVisualizer />
               </div>
               <div className="space-y-2">
@@ -96,16 +95,16 @@ export function HomePage() {
                   max={duration || 1}
                   step={1}
                   onValueChange={(value) => seek(value[0])}
-                  className="[&>span:first-child]:h-1 [&>span:first-child>span]:bg-neon-magenta [&>span:last-child]:bg-neon-cyan [&>span:last-child]:border-neon-yellow [&>span:last-child]:shadow-[0_0_10px_theme(colors.neon-yellow)]"
+                  className="[&>span:first-child>span]:bg-brand-orange [&>span:last-child]:bg-brand-blue [&>span:last-child]:border-brand-orange"
                 />
-                <div className="flex justify-between text-sm text-neon-cyan/80">
+                <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 w-32">
-                  <Button variant="ghost" size="icon" className="text-neon-cyan hover:text-neon-yellow hover:bg-transparent">
+                <div className="flex items-center gap-2 w-32 text-gray-600 dark:text-gray-300">
+                  <Button variant="ghost" size="icon" className="hover:text-brand-blue">
                     <VolumeIcon volume={volume} />
                   </Button>
                   <Slider
@@ -113,22 +112,22 @@ export function HomePage() {
                     max={1}
                     step={0.01}
                     onValueChange={(value) => setVolume(value[0])}
-                    className="w-24 [&>span:first-child]:h-1 [&>span:first-child>span]:bg-neon-cyan [&>span:last-child]:bg-neon-yellow [&>span:last-child]:border-neon-cyan [&>span:last-child]:shadow-[0_0_10px_theme(colors.neon-cyan)]"
+                    className="w-24 [&>span:first-child>span]:bg-brand-blue [&>span:last-child]:bg-brand-orange [&>span:last-child]:border-brand-blue"
                   />
                 </div>
                 <div className="flex items-center gap-4">
-                  <Button onClick={prevTrack} variant="ghost" size="icon" className="text-neon-cyan hover:text-neon-yellow hover:bg-transparent transition-colors active:scale-90">
+                  <Button onClick={prevTrack} variant="ghost" size="icon" className="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors active:scale-90">
                     <SkipBack className="h-8 w-8" />
                   </Button>
                   <Button
                     onClick={togglePlay}
                     variant="outline"
                     size="icon"
-                    className="h-16 w-16 rounded-full border-2 border-neon-magenta text-neon-magenta bg-transparent hover:bg-neon-magenta/20 hover:text-neon-yellow shadow-[0_0_15px_theme(colors.neon-magenta)] transition-all active:scale-90"
+                    className="h-16 w-16 rounded-full border-2 border-brand-orange text-brand-orange bg-transparent hover:bg-brand-orange hover:text-white dark:hover:text-brand-earth shadow-lg transition-all active:scale-90"
                   >
                     {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
                   </Button>
-                  <Button onClick={nextTrack} variant="ghost" size="icon" className="text-neon-cyan hover:text-neon-yellow hover:bg-transparent transition-colors active:scale-90">
+                  <Button onClick={nextTrack} variant="ghost" size="icon" className="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors active:scale-90">
                     <SkipForward className="h-8 w-8" />
                   </Button>
                 </div>
@@ -136,22 +135,22 @@ export function HomePage() {
               </div>
             </div>
             <div className="w-full md:w-64">
-              <h3 className="text-lg text-neon-yellow border-b-2 border-neon-magenta/50 mb-2 pb-1">Playlist</h3>
-              <ScrollArea className="h-80 border border-neon-cyan/50 rounded-sm p-2 bg-black/50">
+              <h3 className="text-lg font-bold text-brand-blue border-b-2 border-brand-orange/50 mb-2 pb-1">Playlist</h3>
+              <ScrollArea className="h-80 border border-gray-200 dark:border-brand-blue/30 rounded-lg p-2 bg-gray-50 dark:bg-black/20">
                 <div className="space-y-1">
                   {playlist.map((track, index) => (
                     <button
                       key={index}
                       onClick={() => playTrack(index)}
                       className={cn(
-                        "w-full text-left p-2 rounded-sm transition-colors text-sm",
+                        "w-full text-left p-2 rounded-md transition-colors text-sm",
                         index === currentTrackIndex
-                          ? "bg-neon-magenta/30 text-neon-yellow animate-text-glitch"
-                          : "text-neon-cyan/80 hover:bg-neon-cyan/20"
+                          ? "bg-brand-orange/20 text-brand-orange"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-brand-blue/20"
                       )}
                     >
                       <p className="font-bold truncate">{track.title}</p>
-                      <p className="text-xs truncate">{track.artist}</p>
+                      <p className="text-xs truncate text-gray-500 dark:text-gray-400">{track.artist}</p>
                     </button>
                   ))}
                 </div>

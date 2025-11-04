@@ -6,7 +6,7 @@ export default {
   	extend: {
   		fontFamily: {
         sans: [
-  				'JetBrains Mono',
+  				'Poppins',
   				'Inter',
   				'-apple-system',
   				'BlinkMacSystemFont',
@@ -15,7 +15,7 @@ export default {
   				'sans-serif'
   			],
   			display: [
-  				'Cal Sans',
+  				'Playfair Display',
   				'Inter',
   				'system-ui',
   				'sans-serif'
@@ -26,7 +26,6 @@ export default {
   				'Consolas',
   				'monospace'
   			],
-        pixel: ['VT323', 'monospace'],
   		},
   		fontSize: {
   			'2xs': [
@@ -93,9 +92,9 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-        'neon-cyan': 'rgb(0, 255, 255)',
-        'neon-magenta': 'rgb(255, 0, 255)',
-        'neon-yellow': 'rgb(255, 255, 0)',
+        'brand-orange': '#F97316',
+        'brand-blue': '#3B82F6',
+        'brand-earth': '#44403C',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			muted: {
@@ -149,8 +148,6 @@ export default {
   		},
   		boxShadow: {
   			soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-  			'glow-cyan': '0 0 5px rgb(0, 255, 255), 0 0 10px rgb(0, 255, 255), 0 0 15px rgb(0, 255, 255)',
-        'glow-magenta': '0 0 5px rgb(255, 0, 255), 0 0 10px rgb(255, 0, 255), 0 0 15px rgb(255, 0, 255)',
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
   			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
   		},
@@ -171,24 +168,10 @@ export default {
   					height: '0'
   				}
   			},
-        'text-glitch': {
-          '0%': { transform: 'translate(0)' },
-          '20%': { transform: 'translate(-2px, 2px)' },
-          '40%': { transform: 'translate(-2px, -2px)' },
-          '60%': { transform: 'translate(2px, 2px)' },
-          '80%': { transform: 'translate(2px, -2px)' },
-          '100%': { transform: 'translate(0)' },
-        },
-        'neon-glow': {
-          '0%, 100%': { opacity: '0.7' },
-          '50%': { opacity: '1' },
-        },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
-        'text-glitch': 'text-glitch 0.3s linear infinite',
-        'neon-glow': 'neon-glow 1.5s ease-in-out infinite',
   		},
   	}
   },
