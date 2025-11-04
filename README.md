@@ -1,5 +1,5 @@
 # PixelPulse
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/asiakay/pixelpulse)
 PixelPulse is a visually striking, modern music player web application with a vibrant 'afro-Present' aesthetic. It combines earthy tones with energetic highlights to create a unique and immersive listening experience. The application's core is a single-view interface featuring a playlist, standard playback controls, and a dynamic, canvas-based audio visualizer that reacts to the music in real-time.
 ## �� Key Features
 *   **Vibrant Afro-Present Theme:** A beautiful, modern interface inspired by afro-present aesthetics, combining earthy background tones with vibrant, energetic accent colors.
@@ -68,4 +68,4 @@ bun run deploy
 ```
 This will trigger the `wrangler deploy` command, which builds and deploys your application to the Cloudflare network. You may need to authenticate with your Cloudflare account if this is your first time using Wrangler.
 Alternatively, you can deploy directly from your GitHub repository with a single click.
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/asiakay/pixelpulse)
