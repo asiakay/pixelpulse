@@ -8,6 +8,7 @@ import { usePlayerStore } from '@/stores/usePlayerStore';
 import AudioVisualizer from '@/components/AudioVisualizer';
 import { cn } from '@/lib/utils';
 const formatTime = (seconds: number) => {
+  if (isNaN(seconds) || seconds < 0) return '0:00';
   const minutes = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
@@ -54,7 +55,7 @@ export function HomePage() {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [nextTrack, setCurrentTime, setDuration]);
+  }, [currentTrackIndex, nextTrack, setCurrentTime, setDuration]);
   return (
     <div className="min-h-screen bg-black text-neon-cyan font-pixel flex items-center justify-center p-4">
       <audio ref={audioRef} src={currentTrack.audioSrc} crossOrigin="anonymous" />
